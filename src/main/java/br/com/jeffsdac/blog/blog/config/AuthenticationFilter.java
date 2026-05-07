@@ -10,6 +10,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
 import br.com.jeffsdac.blog.blog.repository.UserBlogRepository;
+import br.com.jeffsdac.blog.blog.exception.InvalidTokenException;
 import br.com.jeffsdac.blog.blog.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -44,17 +45,12 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-
             String userId = tokenService.validateToken(token);
-            UserBlog user = commomUserRepository.findById(UUID.fromString(userId))
-                    .orElseThrow(() -> new RuntimeException("User not found in the filter"));
-
+            UserBlog user = commomUserRepository.findById(UUID.fromString(userId)).get();
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        } catch (RuntimeException ex) {
-            ex.printStackTrace();
+        } catch (InvalidTokenException ex) {
+            throw ex;
         }
 
         filterChain.doFilter(request, response);
