@@ -1,7 +1,5 @@
 package br.com.jeffsdac.blog.blog.config;
 
-import java.util.Objects;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,8 +13,6 @@ import br.com.jeffsdac.blog.blog.repository.UserBlogRepository;
 import br.com.jeffsdac.blog.blog.repository.UserRoleAssignmentRepository;
 
 @Component
-@ConditionalOnBean({ RoleRepository.class, UserBlogRepository.class, UserRoleAssignmentRepository.class,
-        PasswordEncoder.class })
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
@@ -37,64 +33,47 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        RoleModel roleUser = ensureRoleExists("ROLE_USER");
-        RoleModel roleAdmin = ensureRoleExists("ROLE_ADMIN");
 
-        UserBlog user = ensureUserExists(
-                "jeffsdac",
-                "user@example.com",
-                "User",
-                "Example",
-                "user1234567890");
-        ensureUserHasRole(user, roleUser);
+        RoleModel roleUser = new RoleModel();
+        roleUser.setName("ROLE_USER");
+        roleUser = roleRepository.save(roleUser);
+        System.out.println("[DatabaseSeeder] Created role: " + roleUser.getName());
 
-        UserBlog admin = ensureUserExists(
-                "adminjeff",
-                "admin@example.com",
-                "Admin",
-                "Example",
-                "admin1234567890");
-        ensureUserHasRole(admin, roleAdmin);
-    }
+        RoleModel roleAdmin = new RoleModel();
+        roleAdmin.setName("ROLE_ADMIN");
+        roleAdmin = roleRepository.save(roleAdmin);
+        System.out.println("[DatabaseSeeder] Created role: " + roleAdmin.getName());
 
-    private RoleModel ensureRoleExists(String roleName) {
-        return roleRepository.findByName(roleName).orElseGet(() -> {
-            RoleModel role = new RoleModel();
-            role.setName(roleName);
-            return roleRepository.save(role);
-        });
-    }
+        UserBlog user = new UserBlog();
+        user.setUsername("jeffsdac");
+        user.setEmail("user@example.com");
+        user.setFirstName("User");
+        user.setLastName("Example");
+        user.setPassword(passwordEncoder.encode("user1234567890"));
+        user = userBlogRepository.save(user);
+        System.out.println("[DatabaseSeeder] Created user: " + user.getUsername() + " (" + user.getEmail() + ")");
 
-    private UserBlog ensureUserExists(
-            String username,
-            String email,
-            String firstName,
-            String lastName,
-            String rawPassword) {
+        UserRoleAssignmentModel userAssignment = new UserRoleAssignmentModel();
+        userAssignment.setUser(user);
+        userAssignment.setRole(roleUser);
+        userRoleAssignmentRepository.save(userAssignment);
+        System.out.println("[DatabaseSeeder] Assigned role " + roleUser.getName() + " to user " + user.getUsername());
 
-        return userBlogRepository.findByUsername(username).orElseGet(() -> {
-            UserBlog user = new UserBlog();
-            user.setUsername(username);
-            user.setEmail(email);
-            user.setFirstName(firstName);
-            user.setLastName(lastName);
-            user.setPassword(passwordEncoder.encode(rawPassword));
-            return userBlogRepository.save(user);
-        });
-    }
+        UserBlog admin = new UserBlog();
+        admin.setUsername("adminjeff");
+        admin.setEmail("admin@example.com");
+        admin.setFirstName("Admin");
+        admin.setLastName("Example");
+        admin.setPassword(passwordEncoder.encode("admin1234567890"));
+        admin = userBlogRepository.save(admin);
+        System.out.println("[DatabaseSeeder] Created admin: " + admin.getUsername() + " (" + admin.getEmail() + ")");
 
-    private void ensureUserHasRole(UserBlog user, RoleModel role) {
-        boolean alreadyAssigned = user.getAuthorities().stream()
-                .map(a -> a.getAuthority())
-                .anyMatch(a -> Objects.equals(a, role.getName()));
-
-        if (alreadyAssigned) {
-            return;
-        }
-
-        UserRoleAssignmentModel assignment = new UserRoleAssignmentModel();
-        assignment.setUser(user);
-        assignment.setRole(role);
-        userRoleAssignmentRepository.save(assignment);
+        UserRoleAssignmentModel adminAssignment = new UserRoleAssignmentModel();
+        adminAssignment.setUser(admin);
+        adminAssignment.setRole(roleAdmin);
+        userRoleAssignmentRepository.save(adminAssignment);
+        System.out.println("[DatabaseSeeder] Assigned role " + roleAdmin.getName() + " to user " + admin.getUsername());
     }
 }
+
+

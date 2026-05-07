@@ -39,18 +39,21 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         var token = recoveryToken(request);
 
-        if (token == null) {
+        if (token == null || token.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             String userId = tokenService.validateToken(token);
-            UserBlog user = commomUserRepository.findById(UUID.fromString(userId)).get();
+            UserBlog user = commomUserRepository.findById(UUID.fromString(userId))
+                    .orElseThrow(() -> new InvalidTokenException("Token inválido."));
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (InvalidTokenException ex) {
-            throw ex;
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         filterChain.doFilter(request, response);
@@ -58,7 +61,10 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     private String recoveryToken(HttpServletRequest request) {
         var authHeader = request.getHeader("Authorization");
-        if (authHeader == null) {
+        if (authHeader == null || authHeader.isBlank()) {
+            return null;
+        }
+        if (!authHeader.startsWith("Bearer ")) {
             return null;
         }
         return authHeader.replace("Bearer ", "");
