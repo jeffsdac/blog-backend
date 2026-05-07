@@ -26,29 +26,13 @@ public class BlogUserController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> doLogin(@RequestBody @Valid LoginDTO loginDTO) {
-        try {
-            return ResponseEntity.ok(userBlogService.login(loginDTO));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        return ResponseEntity.ok(userBlogService.login(loginDTO));
     }
 
     @PostMapping("/register")
     public ResponseEntity<UserBlogPublicDTO> register(@RequestBody @Valid RegisterUserDTO registerUserDTO) {
-        try {
-            var user = userBlogService.saveUser(registerUserDTO);
-            var dto = new UserBlogPublicDTO(user.getId(), user.getUsername(), user.getEmail());
-            return ResponseEntity.status(HttpStatus.CREATED).body(dto);
-        } catch (RuntimeException ex) {
-            String message = ex.getMessage();
-            if ("Username already exists".equals(message) || "Email already exists".equals(message)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
-            }
-            if ("Password mismatch".equals(message)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        var user = userBlogService.saveUser(registerUserDTO);
+        var dto = new UserBlogPublicDTO(user.getId(), user.getUsername(), user.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 }
-

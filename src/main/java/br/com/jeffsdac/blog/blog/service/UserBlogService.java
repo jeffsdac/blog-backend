@@ -3,6 +3,9 @@ package br.com.jeffsdac.blog.blog.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import br.com.jeffsdac.blog.blog.exception.ConflictException;
+import br.com.jeffsdac.blog.blog.exception.InvalidCredentialsException;
+import br.com.jeffsdac.blog.blog.exception.ValidationException;
 import br.com.jeffsdac.blog.blog.model.auths.RoleModel;
 import br.com.jeffsdac.blog.blog.model.auths.UserRoleAssignmentModel;
 import br.com.jeffsdac.blog.blog.model.auths.dto.TokenDTO;
@@ -41,13 +44,13 @@ public class UserBlogService {
     public UserBlog saveUser(RegisterUserDTO userDto) {
 
         if (userRepo.findByUsername(userDto.username()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("Username já cadastrado.");
         }
         if (userRepo.findByEmail(userDto.email()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Email já cadastrado.");
         }
         if (!userDto.password().equals(userDto.confirmedPassword())) {
-            throw new RuntimeException("Password mismatch");
+            throw new ValidationException("As senhas precisam ser iguais.");
         }
 
         var role = roleRepository.findByName("ROLE_USER")
@@ -80,15 +83,14 @@ public class UserBlogService {
     public TokenDTO login(LoginDTO loginDTO) {
 
         UserBlog userModel = userRepo.findByUsername(loginDTO.username())
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new InvalidCredentialsException("Usuário ou senha inválidos."));
 
         boolean passwordIsCorrect = passwordEncoder.matches(loginDTO.password(), userModel.getPassword());
         if (!passwordIsCorrect) {
-            throw new RuntimeException();
+            throw new InvalidCredentialsException("Usuário ou senha inválidos.");
         }
 
         String token = tokenService.generateToken(userModel);
         return new TokenDTO(token);
     }
 }
-
