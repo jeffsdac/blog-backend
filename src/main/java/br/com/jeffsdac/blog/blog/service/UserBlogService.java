@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import br.com.jeffsdac.blog.blog.exception.ConflictException;
 import br.com.jeffsdac.blog.blog.exception.InvalidCredentialsException;
 import br.com.jeffsdac.blog.blog.exception.ValidationException;
-import br.com.jeffsdac.blog.blog.model.auths.RoleModel;
 import br.com.jeffsdac.blog.blog.model.auths.UserRoleAssignmentModel;
 import br.com.jeffsdac.blog.blog.model.auths.dto.TokenDTO;
 import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
@@ -54,11 +53,7 @@ public class UserBlogService {
         }
 
         var role = roleRepository.findByName("ROLE_USER")
-                .orElseGet(() -> {
-                    RoleModel newRole = new RoleModel();
-                    newRole.setName("ROLE_USER");
-                    return roleRepository.save(newRole);
-                });
+                .orElseThrow(() -> new ValidationException("Role ROLE_USER não encontrada no sistema."));
 
         var user = new UserBlog();
         user.setEmail(userDto.email());
