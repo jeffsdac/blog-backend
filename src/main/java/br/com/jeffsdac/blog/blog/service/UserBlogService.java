@@ -2,6 +2,8 @@ package br.com.jeffsdac.blog.blog.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import br.com.jeffsdac.blog.blog.exception.ConflictException;
 import br.com.jeffsdac.blog.blog.exception.InvalidCredentialsException;
@@ -18,6 +20,8 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class UserBlogService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserBlogService.class);
 
     private final TokenService tokenService;
     private final UserBlogRepository userRepo;
@@ -43,12 +47,15 @@ public class UserBlogService {
     public UserBlog saveUser(RegisterUserDTO userDto) {
 
         if (userRepo.findByUsername(userDto.username()).isPresent()) {
+            log.info("Register denied (username exists): {}", userDto.username());
             throw new ConflictException("Username já cadastrado.");
         }
         if (userRepo.findByEmail(userDto.email()).isPresent()) {
+            log.info("Register denied (email exists): {}", userDto.email());
             throw new ConflictException("Email já cadastrado.");
         }
         if (!userDto.password().equals(userDto.confirmedPassword())) {
+            log.info("Register denied (password mismatch) for username: {}", userDto.username());
             throw new ValidationException("As senhas precisam ser iguais.");
         }
 
@@ -65,6 +72,7 @@ public class UserBlogService {
         user.setPassword(encryptedPassword);
 
         var savedUser = userRepo.save(user);
+        log.info("User created: {} ({})", savedUser.getUsername(), savedUser.getEmail());
 
         var assignment = new UserRoleAssignmentModel();
         assignment.setRole(role);
@@ -86,6 +94,7 @@ public class UserBlogService {
         }
 
         String token = tokenService.generateToken(userModel);
+        log.info("Login success for user: {}", userModel.getUsername());
         return new TokenDTO(token);
     }
 }

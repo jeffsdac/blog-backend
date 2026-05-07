@@ -16,10 +16,14 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfigurations {
+
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfigurations.class);
 
     @Value("${app.frontend.url}")
     private String frontEndUrl;
@@ -57,6 +61,7 @@ public class SecurityConfigurations {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    log.debug("Unauthorized request: {} {}", request.getMethod(), request.getRequestURI());
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/user/login").permitAll()

@@ -6,6 +6,8 @@ import java.time.ZoneOffset;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -15,6 +17,8 @@ import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
 
 @Service
 public class TokenService {
+
+    private static final Logger log = LoggerFactory.getLogger(TokenService.class);
 
     // private static Logger log = LoggerFactory.getLogger(TokenService.class);
 
@@ -48,10 +52,10 @@ public class TokenService {
                     .getClaim("userId")
                     .asString();
         } catch (Exception e) {
-            // log.error("Erro ao validar o token: " + e.getMessage());
             if (e instanceof InvalidTokenException ite) {
                 throw ite;
             }
+            log.debug("Token validation failed: {}", e.getMessage());
             throw new InvalidTokenException("Token inválido.");
         }
     }

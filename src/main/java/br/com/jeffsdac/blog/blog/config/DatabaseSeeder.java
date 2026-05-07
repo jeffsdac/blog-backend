@@ -4,6 +4,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import br.com.jeffsdac.blog.blog.model.auths.RoleModel;
 import br.com.jeffsdac.blog.blog.model.auths.UserRoleAssignmentModel;
@@ -14,6 +16,8 @@ import br.com.jeffsdac.blog.blog.repository.UserRoleAssignmentRepository;
 
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DatabaseSeeder.class);
 
     private final RoleRepository roleRepository;
     private final UserBlogRepository userBlogRepository;
@@ -37,12 +41,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         RoleModel roleUser = new RoleModel();
         roleUser.setName("ROLE_USER");
         roleUser = roleRepository.save(roleUser);
-        System.out.println("[DatabaseSeeder] Created role: " + roleUser.getName());
+        log.info("Created role: {}", roleUser.getName());
 
         RoleModel roleAdmin = new RoleModel();
         roleAdmin.setName("ROLE_ADMIN");
         roleAdmin = roleRepository.save(roleAdmin);
-        System.out.println("[DatabaseSeeder] Created role: " + roleAdmin.getName());
+        log.info("Created role: {}", roleAdmin.getName());
 
         UserBlog user = new UserBlog();
         user.setUsername("jeffsdac");
@@ -51,13 +55,13 @@ public class DatabaseSeeder implements CommandLineRunner {
         user.setLastName("Example");
         user.setPassword(passwordEncoder.encode("user1234567890"));
         user = userBlogRepository.save(user);
-        System.out.println("[DatabaseSeeder] Created user: " + user.getUsername() + " (" + user.getEmail() + ")");
+        log.info("Created user: {} ({})", user.getUsername(), user.getEmail());
 
         UserRoleAssignmentModel userAssignment = new UserRoleAssignmentModel();
         userAssignment.setUser(user);
         userAssignment.setRole(roleUser);
         userRoleAssignmentRepository.save(userAssignment);
-        System.out.println("[DatabaseSeeder] Assigned role " + roleUser.getName() + " to user " + user.getUsername());
+        log.info("Assigned role {} to user {}", roleUser.getName(), user.getUsername());
 
         UserBlog admin = new UserBlog();
         admin.setUsername("adminjeff");
@@ -66,14 +70,13 @@ public class DatabaseSeeder implements CommandLineRunner {
         admin.setLastName("Example");
         admin.setPassword(passwordEncoder.encode("admin1234567890"));
         admin = userBlogRepository.save(admin);
-        System.out.println("[DatabaseSeeder] Created admin: " + admin.getUsername() + " (" + admin.getEmail() + ")");
+        log.info("Created admin: {} ({})", admin.getUsername(), admin.getEmail());
 
         UserRoleAssignmentModel adminAssignment = new UserRoleAssignmentModel();
         adminAssignment.setUser(admin);
         adminAssignment.setRole(roleAdmin);
         userRoleAssignmentRepository.save(adminAssignment);
-        System.out.println("[DatabaseSeeder] Assigned role " + roleAdmin.getName() + " to user " + admin.getUsername());
+        log.info("Assigned role {} to user {}", roleAdmin.getName(), admin.getUsername());
     }
 }
-
 
