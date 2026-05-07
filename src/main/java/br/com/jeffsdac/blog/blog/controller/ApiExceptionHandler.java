@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import br.com.jeffsdac.blog.blog.exception.ConflictException;
 import br.com.jeffsdac.blog.blog.exception.InvalidCredentialsException;
+import br.com.jeffsdac.blog.blog.exception.InvalidTokenException;
 import br.com.jeffsdac.blog.blog.exception.ValidationException;
 import br.com.jeffsdac.blog.blog.model.common.dto.ApiErrorDTO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,6 +51,11 @@ public class ApiExceptionHandler {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI(), null);
     }
 
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApiErrorDTO> handleInvalidToken(InvalidTokenException ex, HttpServletRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI(), null);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiErrorDTO> handleRuntime(RuntimeException ex, HttpServletRequest request) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", request.getRequestURI(), null);
@@ -72,4 +78,3 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(status).body(dto);
     }
 }
-

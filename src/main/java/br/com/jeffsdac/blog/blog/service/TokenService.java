@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
+import br.com.jeffsdac.blog.blog.exception.InvalidTokenException;
 import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
 
 @Service
@@ -35,6 +36,9 @@ public class TokenService {
 
     public String validateToken(String token) {
         try {
+            if (token == null || token.isBlank()) {
+                throw new InvalidTokenException("Token ausente.");
+            }
             Algorithm algorithm = Algorithm.HMAC256(secret);
 
             return JWT.require(algorithm)
@@ -45,7 +49,10 @@ public class TokenService {
                     .asString();
         } catch (Exception e) {
             // log.error("Erro ao validar o token: " + e.getMessage());
-            throw new RuntimeException("Invalid token: " + e.getMessage(), e);
+            if (e instanceof InvalidTokenException ite) {
+                throw ite;
+            }
+            throw new InvalidTokenException("Token inválido.");
         }
     }
 
