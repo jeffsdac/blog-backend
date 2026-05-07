@@ -1,7 +1,6 @@
 package br.com.jeffsdac.blog.blog.config;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
@@ -79,4 +78,3 @@ public class DatabaseSeeder implements CommandLineRunner {
         log.info("Assigned role {} to user {}", roleAdmin.getName(), admin.getUsername());
     }
 }
-
