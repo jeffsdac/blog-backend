@@ -1,7 +1,9 @@
 package br.com.jeffsdac.blog.blog.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+import br.com.jeffsdac.blog.blog.model.auths.RoleModel;
 import br.com.jeffsdac.blog.blog.model.auths.UserRoleAssignmentModel;
 import br.com.jeffsdac.blog.blog.model.auths.dto.TokenDTO;
 import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
@@ -12,17 +14,17 @@ import br.com.jeffsdac.blog.blog.repository.UserBlogRepository;
 import br.com.jeffsdac.blog.blog.repository.UserRoleAssignmentRepository;
 import jakarta.transaction.Transactional;
 
+@Service
 public class UserBlogService {
 
-    private TokenService tokenService;
-    private UserBlogRepository userRepo;
-    private PasswordEncoder passwordEncoder;
-    private RoleRepository roleRepository;
-    private UserRoleAssignmentRepository userRoleRepo;
-    // private static final Logger log =
-    // LoggerFactory.getLogger(CommomUserService.class);
+    private final TokenService tokenService;
+    private final UserBlogRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final UserRoleAssignmentRepository userRoleRepo;
 
-    public UserBlogService(UserBlogRepository userRepository,
+    public UserBlogService(
+            UserBlogRepository userRepository,
             PasswordEncoder passwordEncoder,
             RoleRepository roleRepository,
             UserRoleAssignmentRepository userRoleRepo,
@@ -38,47 +40,55 @@ public class UserBlogService {
     @Transactional
     public UserBlog saveUser(RegisterUserDTO userDto) {
 
-        // log.info("EM USER SERVICE COM O USUARIODTO: " + userDto.username());
+        if (userRepo.findByUsername(userDto.username()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepo.findByEmail(userDto.email()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+        if (!userDto.password().equals(userDto.confirmedPassword())) {
+            throw new RuntimeException("Password mismatch");
+        }
+
         var role = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new RuntimeException("NÃO FOI ENCONTRADO O ROLE_USER"));
-        // log.info("ROLES FORAM ENCONTRADAS");
+                .orElseGet(() -> {
+                    RoleModel newRole = new RoleModel();
+                    newRole.setName("ROLE_USER");
+                    return roleRepository.save(newRole);
+                });
 
         var user = new UserBlog();
         user.setEmail(userDto.email());
         user.setUsername(userDto.username());
+        user.setFirstName(userDto.firstName() == null ? "" : userDto.firstName());
+        user.setLastName(userDto.lastName() == null ? "" : userDto.lastName());
+
         String encryptedPassword = passwordEncoder.encode(userDto.password());
         user.setPassword(encryptedPassword);
+
         var savedUser = userRepo.save(user);
-        // log.info("USUARIO SALVO ID: " + savedUser.getId());
 
         var assignment = new UserRoleAssignmentModel();
         assignment.setRole(role);
         assignment.setUser(savedUser);
-        var savedAssignment = userRoleRepo.save(assignment);
-        // log.info("RELACAO COM ROLE: " + savedAssignment.getRole().getName() + " E
-        // USUARIO: "
-        // + savedAssignment.getUser().getUsername() + " FEITA");
+        userRoleRepo.save(assignment);
 
         return savedUser;
     }
 
     @Transactional
-    public TokenDTO login(LoginDTO loginDTO) throws RuntimeException {
-        // log.info("In Service user, with user: " + loginDTO);
+    public TokenDTO login(LoginDTO loginDTO) {
 
         UserBlog userModel = userRepo.findByUsername(loginDTO.username())
-                .orElseThrow(() -> new RuntimeException());
-        // log.info("Found user by username: " + loginDTO);
+                .orElseThrow(RuntimeException::new);
 
         boolean passwordIsCorrect = passwordEncoder.matches(loginDTO.password(), userModel.getPassword());
-        if (!passwordIsCorrect)
+        if (!passwordIsCorrect) {
             throw new RuntimeException();
-        // log.info("Correct password");
+        }
 
         String token = tokenService.generateToken(userModel);
-        // log.info("Sucessfull generate token");
         return new TokenDTO(token);
-
     }
-
 }
+

@@ -38,6 +38,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         var token = recoveryToken(request);
 
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
 
             String userId = tokenService.validateToken(token);

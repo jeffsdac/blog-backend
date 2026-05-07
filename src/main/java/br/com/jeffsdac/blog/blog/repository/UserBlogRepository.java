@@ -10,4 +10,6 @@ import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
 public interface UserBlogRepository extends JpaRepository<UserBlog, UUID> {
 
     Optional<UserBlog> findByUsername(String username);
+
+    Optional<UserBlog> findByEmail(String email);
 }
