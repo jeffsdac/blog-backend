@@ -41,7 +41,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         RoleModel roleAdmin = ensureRoleExists("ROLE_ADMIN");
 
         UserBlog user = ensureUserExists(
-                "user",
+                "jeffsdac",
                 "user@example.com",
                 "User",
                 "Example",
@@ -49,7 +49,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         ensureUserHasRole(user, roleUser);
 
         UserBlog admin = ensureUserExists(
-                "admin",
+                "adminjeff",
                 "admin@example.com",
                 "Admin",
                 "Example",
