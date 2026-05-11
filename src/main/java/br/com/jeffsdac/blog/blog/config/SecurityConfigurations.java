@@ -69,9 +69,13 @@ public class SecurityConfigurations {
                         .requestMatchers("/api/v1/user/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll()
                         .requestMatchers(
+                                "/v3/api-docs",
                                 "/v3/api-docs/**",
+                                "/swagger-ui",
+                                "/swagger-ui/",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html")
+                                "/swagger-ui.html",
+                                "/webjars/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
