@@ -14,8 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.com.jeffsdac.blog.blog.exception.ConflictException;
+import br.com.jeffsdac.blog.blog.exception.ForbiddenException;
 import br.com.jeffsdac.blog.blog.exception.InvalidCredentialsException;
 import br.com.jeffsdac.blog.blog.exception.InvalidTokenException;
+import br.com.jeffsdac.blog.blog.exception.NotFoundException;
 import br.com.jeffsdac.blog.blog.exception.ValidationException;
 import br.com.jeffsdac.blog.blog.model.common.dto.ApiErrorDTO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,9 +57,19 @@ public class ApiExceptionHandler {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI(), null);
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiErrorDTO> handleForbidden(ForbiddenException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI(), null);
+    }
+
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ApiErrorDTO> handleInvalidToken(InvalidTokenException ex, HttpServletRequest request) {
         return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiErrorDTO> handleNotFound(NotFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(RuntimeException.class)

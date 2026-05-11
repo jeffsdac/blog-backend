@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import br.com.jeffsdac.blog.blog.model.BaseModelClass;
 import br.com.jeffsdac.blog.blog.model.auths.UserRoleAssignmentModel;
+import br.com.jeffsdac.blog.blog.model.posts.PostModel;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,6 +47,9 @@ public class UserBlog extends BaseModelClass implements UserDetails {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<UserRoleAssignmentModel> authorities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    private List<PostModel> posts = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -104,6 +108,14 @@ public class UserBlog extends BaseModelClass implements UserDetails {
 
     public void setAuthorities(List<UserRoleAssignmentModel> authorities) {
         this.authorities = authorities;
+    }
+
+    public List<PostModel> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<PostModel> posts) {
+        this.posts = posts;
     }
 
 }
