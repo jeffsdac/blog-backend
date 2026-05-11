@@ -21,6 +21,7 @@ import br.com.jeffsdac.blog.blog.model.posts.dto.PostPublicDTO;
 import br.com.jeffsdac.blog.blog.model.posts.dto.UpdatePostDTO;
 import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
 import br.com.jeffsdac.blog.blog.service.PostService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @RestController
@@ -41,6 +42,7 @@ public class PostController {
         return ResponseEntity.ok(postService.getById(id));
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<PostPublicDTO> create(
             @AuthenticationPrincipal UserBlog author,
@@ -52,6 +54,7 @@ public class PostController {
                 .body(created);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{id}")
     public ResponseEntity<PostPublicDTO> update(
             @PathVariable UUID id,
