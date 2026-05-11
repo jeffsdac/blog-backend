@@ -35,4 +35,12 @@ public class BaseModelClass {
     void onUpdate() {
         this.updatedAt = Instant.now();
     }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
 }
