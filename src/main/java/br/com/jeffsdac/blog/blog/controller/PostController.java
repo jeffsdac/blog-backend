@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.jeffsdac.blog.blog.model.genericDtos.PageResponseDTO;
 import br.com.jeffsdac.blog.blog.model.posts.dto.CreatePostDTO;
 import br.com.jeffsdac.blog.blog.model.posts.dto.PostPublicDTO;
 import br.com.jeffsdac.blog.blog.model.posts.dto.UpdatePostDTO;
@@ -40,6 +42,14 @@ public class PostController {
     public ResponseEntity<PostPublicDTO> getById(@PathVariable UUID id) {
         log.debug("GET /api/v1/posts/{}", id);
         return ResponseEntity.ok(postService.getById(id));
+    }
+
+    @GetMapping
+    public ResponseEntity<PageResponseDTO<PostPublicDTO>> getAll(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "0") int offset) {
+        log.debug("GET /api/v1/post limit={} offset={}", limit, offset);
+        return ResponseEntity.ok(postService.getAll(limit, offset));
     }
 
     @SecurityRequirement(name = "bearerAuth")

@@ -1,5 +1,6 @@
 package br.com.jeffsdac.blog.blog.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import br.com.jeffsdac.blog.blog.exception.ForbiddenException;
 import br.com.jeffsdac.blog.blog.exception.NotFoundException;
+import br.com.jeffsdac.blog.blog.exception.ValidationException;
+import br.com.jeffsdac.blog.blog.model.genericDtos.PageResponseDTO;
 import br.com.jeffsdac.blog.blog.model.posts.PostModel;
 import br.com.jeffsdac.blog.blog.model.posts.dto.CreatePostDTO;
 import br.com.jeffsdac.blog.blog.model.posts.dto.PostPublicDTO;
@@ -57,6 +60,21 @@ public class PostService {
         PostModel saved = postRepository.save(post);
         log.info("Post updated id={} by actor={}", id, actor.getUsername());
         return toPublicDto(saved);
+    }
+
+    public PageResponseDTO<PostPublicDTO> getAll(int limit, int offset) {
+        if (limit < 1 || limit > 20) {
+            throw new ValidationException("Limit must be between 1 and 20.");
+        }
+        log.debug("Fetching posts limit={} offset={}", limit, offset);
+        List<PostPublicDTO> posts = postRepository.findAllOrderedByCreatedAtDesc(limit, offset)
+                .stream()
+                .map(this::toPublicDto)
+                .toList();
+
+        long total = postRepository.count();
+
+        return new PageResponseDTO<>(posts, limit, offset, total);
     }
 
     private void ensureCanEdit(PostModel post, UserBlog actor) {
