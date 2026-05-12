@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.jeffsdac.blog.blog.model.postReaction.DTOs.PostReactionResponseDTO;
 import br.com.jeffsdac.blog.blog.model.postReaction.DTOs.TogglePostReaction;
 import br.com.jeffsdac.blog.blog.model.userBlog.UserBlog;
 import br.com.jeffsdac.blog.blog.service.PostReactionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/post-reactor")
@@ -28,20 +30,20 @@ public class PostReactionController {
 
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
-    public ResponseEntity<TogglePostReaction> saveReaction(@RequestBody TogglePostReaction dto,
+    public ResponseEntity<PostReactionResponseDTO> saveReaction(@RequestBody @Valid TogglePostReaction dto,
             @AuthenticationPrincipal UserBlog user) {
-        log.debug("POST /api/v1/post-reactor postId={} userId={} reaction={} authenticatedUser={}",
+        log.debug("POST /api/v1/post-reactor postId={} reaction={} authenticatedUser={}",
                 dto.postId(),
-                dto.userId(),
                 dto.reaction(),
                 user == null ? "null" : user.getUsername());
 
-        TogglePostReaction reaction = postReactionService.react(dto);
+        PostReactionResponseDTO reaction = postReactionService.react(dto, user);
 
-        log.debug("POST /api/v1/post-reactor completed postId={} userId={} reaction={}",
+        log.debug("POST /api/v1/post-reactor completed postId={} userId={} action={} currentReaction={}",
                 reaction.postId(),
                 reaction.userId(),
-                reaction.reaction());
+                reaction.action(),
+                reaction.currentReaction());
 
         return ResponseEntity.status(200).body(reaction);
     }
